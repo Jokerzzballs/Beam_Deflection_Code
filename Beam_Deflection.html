@@ -1,0 +1,307 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Beam_Deflection</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-04"><meta name="DC.source" content="Beam_Deflection.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> main_beam_deflection()
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% 1. UPDATED PHYSICAL PARAMETERS (From Spreadsheet)</span>
+    <span class="comment">% =====================================================================</span>
+    L  = 0.5;          <span class="comment">% Length of the beam (meters)</span>
+    b  = 0.03;         <span class="comment">% Width of cross-section (meters)</span>
+    t  = 0.01;         <span class="comment">% Thickness of cross-section (meters)</span>
+    P  = 1000.0;        <span class="comment">% Point load at free tip (N)</span>
+    w_area = 38500;    <span class="comment">% Distributed load per area (N/m^2)</span>
+    E  = 200e9;        <span class="comment">% Young's Modulus: 200 GPa = 200e9 Pa</span>
+    I  = 2.50e-09;     <span class="comment">% Moment of Inertia (m^4)</span>
+
+    <span class="comment">% Convert area load to linear load: q (N/m) = w (N/m^2) * width b (m)</span>
+    q = w_area * b;
+
+    EI = E * I;        <span class="comment">% Flexural rigidity</span>
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% 2. MESH DISCRETIZATION (s represents the position along the beam)</span>
+    <span class="comment">% =====================================================================</span>
+    num_steps = 150; <span class="comment">% Increased resolution for a shorter beam</span>
+    s_mesh = linspace(0, L, num_steps);
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% 3. SYSTEM OF FIRST-ORDER ODEs (Anonymous Function)</span>
+    <span class="comment">% =====================================================================</span>
+    f_system = @(s, Y) [Y(2); <span class="keyword">...</span>
+                        Y(3); <span class="keyword">...</span>
+                        -(q/EI)*(L - s) - (P/EI)];
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% 4. THE SHOOTING METHOD (Using Secant Iteration)</span>
+    <span class="comment">% =====================================================================</span>
+    guess1 = 0.0;
+    guess2 = -0.01;
+
+    sol1 = RK4(f_system, s_mesh, [0; 0; guess1]);
+    error1 = sol1(3, end);
+
+    sol2 = RK4(f_system, s_mesh, [0; 0; guess2]);
+    error2 = sol2(3, end);
+
+    tolerance = 1e-9;
+    max_iter = 50;
+    converged = false;
+
+    <span class="keyword">for</span> iter = 1:max_iter
+        <span class="keyword">if</span> abs(error2 - error1) &lt; 1e-15, <span class="keyword">break</span>; <span class="keyword">end</span>
+
+        next_guess = guess2 - error2 * (guess2 - guess1) / (error2 - error1);
+        sol_next = RK4(f_system, s_mesh, [0; 0; next_guess]);
+        error_next = sol_next(3, end);
+
+        <span class="keyword">if</span> abs(error_next) &lt; tolerance
+            fprintf(<span class="string">'Convergence achieved in %d iterations!\n'</span>, iter);
+            final_solution = sol_next;
+            converged = true;
+            <span class="keyword">break</span>;
+        <span class="keyword">end</span>
+
+        guess1 = guess2;     error1 = error2;
+        guess2 = next_guess; error2 = error_next;
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> ~converged
+        error(<span class="string">'The shooting method failed to converge.'</span>);
+    <span class="keyword">end</span>
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% 5. EXTRACT ANGLE &amp; CALCULATE X-DIRECTION DEFLECTION</span>
+    <span class="comment">% =====================================================================</span>
+    vertical_y  = final_solution(1, :);
+    slope_angle = final_solution(2, :);
+
+    <span class="comment">% True deformed horizontal coordinates</span>
+    deformed_x = cumtrapz(s_mesh, cos(slope_angle));
+
+    <span class="comment">% Horizontal displacement profile (u_x = s - x)</span>
+    horiz_deflection_x = s_mesh - deformed_x;
+
+    <span class="comment">% Print out results</span>
+    fprintf(<span class="string">'\n--- RESULTS AT THE FREE TIP (s = L) ---\n'</span>);
+    fprintf(<span class="string">'Deflection Angle:          %.4f degrees\n'</span>, rad2deg(slope_angle(end)));
+    fprintf(<span class="string">'Vertical Deflection (y):    %.4f mm\n'</span>, vertical_y(end) * 1000);
+    fprintf(<span class="string">'Horizontal Deflection (x):  %.4f mm\n'</span>, horiz_deflection_x(end) * 1000);
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% 6. PLOT THE TRUE 2D DEFORMED SHAPE</span>
+    <span class="comment">% =====================================================================</span>
+    figure;
+    plot(deformed_x, vertical_y, <span class="string">'b-'</span>, <span class="string">'LineWidth'</span>, 2.5);
+    grid <span class="string">on</span>;
+    title(<span class="string">'Deformed Cantilever Profile (Custom Geometry Configuration)'</span>);
+    xlabel(<span class="string">'Horizontal Position x (m)'</span>);
+    ylabel(<span class="string">'Vertical Deflection y (m)'</span>);
+    set(gca, <span class="string">'YDir'</span>, <span class="string">'reverse'</span>);
+<span class="keyword">end</span>
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">% 7. RUNGE-KUTTA 4 SYSTEM SOLVER</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> y = RK4(f, x, y0)
+    y = zeros(length(y0), length(x));
+    y(:, 1) = y0;
+    h = x(2) - x(1);
+    n = length(x);
+    <span class="keyword">for</span> i = 1:n-1
+        k1 = f(x(i), y(:, i));
+        k2 = f(x(i) + h/2, y(:, i) + h*k1/2);
+        k3 = f(x(i) + h/2, y(:, i) + h*k2/2);
+        k4 = f(x(i) + h, y(:, i) + h*k3);
+        y(:, i+1) = y(:, i) + h*(k1 + 2*k2 + 2*k3 + k4)/6;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Convergence achieved in 1 iterations!
+
+--- RESULTS AT THE FREE TIP (s = L) ---
+Deflection Angle:          17.0813 degrees
+Vertical Deflection (y):    101.3802 mm
+Horizontal Deflection (x):  12.1451 mm
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function main_beam_deflection()
+    % =====================================================================
+    % 1. UPDATED PHYSICAL PARAMETERS (From Spreadsheet)
+    % =====================================================================
+    L  = 0.5;          % Length of the beam (meters)
+    b  = 0.03;         % Width of cross-section (meters)
+    t  = 0.01;         % Thickness of cross-section (meters)
+    P  = 1000.0;        % Point load at free tip (N)
+    w_area = 38500;    % Distributed load per area (N/m^2)
+    E  = 200e9;        % Young's Modulus: 200 GPa = 200e9 Pa
+    I  = 2.50e-09;     % Moment of Inertia (m^4)
+    
+    % Convert area load to linear load: q (N/m) = w (N/m^2) * width b (m)
+    q = w_area * b;    
+    
+    EI = E * I;        % Flexural rigidity
+
+    % =====================================================================
+    % 2. MESH DISCRETIZATION (s represents the position along the beam)
+    % =====================================================================
+    num_steps = 150; % Increased resolution for a shorter beam
+    s_mesh = linspace(0, L, num_steps);
+
+    % =====================================================================
+    % 3. SYSTEM OF FIRST-ORDER ODEs (Anonymous Function)
+    % =====================================================================
+    f_system = @(s, Y) [Y(2); ...
+                        Y(3); ...
+                        -(q/EI)*(L - s) - (P/EI)];
+
+    % =====================================================================
+    % 4. THE SHOOTING METHOD (Using Secant Iteration)
+    % =====================================================================
+    guess1 = 0.0;
+    guess2 = -0.01;
+
+    sol1 = RK4(f_system, s_mesh, [0; 0; guess1]);
+    error1 = sol1(3, end); 
+
+    sol2 = RK4(f_system, s_mesh, [0; 0; guess2]);
+    error2 = sol2(3, end);
+
+    tolerance = 1e-9;
+    max_iter = 50;
+    converged = false;
+
+    for iter = 1:max_iter
+        if abs(error2 - error1) < 1e-15, break; end
+        
+        next_guess = guess2 - error2 * (guess2 - guess1) / (error2 - error1);
+        sol_next = RK4(f_system, s_mesh, [0; 0; next_guess]);
+        error_next = sol_next(3, end);
+        
+        if abs(error_next) < tolerance
+            fprintf('Convergence achieved in %d iterations!\n', iter);
+            final_solution = sol_next;
+            converged = true;
+            break;
+        end
+        
+        guess1 = guess2;     error1 = error2;
+        guess2 = next_guess; error2 = error_next;
+    end
+
+    if ~converged
+        error('The shooting method failed to converge.');
+    end
+
+    % =====================================================================
+    % 5. EXTRACT ANGLE & CALCULATE X-DIRECTION DEFLECTION
+    % =====================================================================
+    vertical_y  = final_solution(1, :);   
+    slope_angle = final_solution(2, :);   
+
+    % True deformed horizontal coordinates
+    deformed_x = cumtrapz(s_mesh, cos(slope_angle));
+    
+    % Horizontal displacement profile (u_x = s - x)
+    horiz_deflection_x = s_mesh - deformed_x;
+
+    % Print out results
+    fprintf('\nREPLACE_WITH_DASH_DASH- RESULTS AT THE FREE TIP (s = L) REPLACE_WITH_DASH_DASH-\n');
+    fprintf('Deflection Angle:          %.4f degrees\n', rad2deg(slope_angle(end)));
+    fprintf('Vertical Deflection (y):    %.4f mm\n', vertical_y(end) * 1000);
+    fprintf('Horizontal Deflection (x):  %.4f mm\n', horiz_deflection_x(end) * 1000);
+
+    % =====================================================================
+    % 6. PLOT THE TRUE 2D DEFORMED SHAPE
+    % =====================================================================
+    figure;
+    plot(deformed_x, vertical_y, 'b-', 'LineWidth', 2.5);
+    grid on;
+    title('Deformed Cantilever Profile (Custom Geometry Configuration)');
+    xlabel('Horizontal Position x (m)');
+    ylabel('Vertical Deflection y (m)');
+    set(gca, 'YDir', 'reverse'); 
+end
+
+% =========================================================================
+% 7. RUNGE-KUTTA 4 SYSTEM SOLVER
+% =========================================================================
+function y = RK4(f, x, y0)
+    y = zeros(length(y0), length(x)); 
+    y(:, 1) = y0; 
+    h = x(2) - x(1); 
+    n = length(x);
+    for i = 1:n-1
+        k1 = f(x(i), y(:, i));
+        k2 = f(x(i) + h/2, y(:, i) + h*k1/2);
+        k3 = f(x(i) + h/2, y(:, i) + h*k2/2);
+        k4 = f(x(i) + h, y(:, i) + h*k3);
+        y(:, i+1) = y(:, i) + h*(k1 + 2*k2 + 2*k3 + k4)/6;
+    end
+end
+##### SOURCE END #####
+--></body></html>
